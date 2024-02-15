@@ -1,0 +1,39 @@
+name: Deploy to firebase
+'on':
+  push:
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+  deploy:
+    needs:
+      - test
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Firebase CLI locally
+        run: npm install firebase-tools
+      - name: Firebase login
+        run: npx firebase login --token $FIREBASE_TOKEN
+      - name: Firebase deploy
+        run: npx firebase deploy --only hosting --token $FIREBASE_TOKEN
